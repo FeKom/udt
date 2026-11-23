@@ -1,15 +1,26 @@
 # Roadmap
 
+## Fase 0 — Fundação
+
+- [x] Monolito modular em `cmd/api` + `internal/<modulo>`
+- [x] PostgreSQL 18 via Docker Compose, migrations com golang-migrate
+- [x] `pgx` + `squirrel` com `postgres.DBTX` (pool ou transação)
+- [x] Middlewares de log e recover, shutdown gracioso
+- [x] `GET /healthz` e `GET /readyz`
+- [x] Módulo `identity` de referência: criar, buscar e listar usuários
+
+---
+
 ## Fase 1 — Auth & Usuários
 
 ### 1.1 Usuário
-- [ ] Modelo `User` no MongoDB (`id`, `name`, `email`, `password_hash`, `family_id`, `created_at`)
+- [ ] Tabela `users` (`id`, `name`, `email`, `created_at`) — feita na Fase 0; falta `password_hash`
 - [ ] `POST /auth/register` — cadastro com senha hasheada (bcrypt)
 - [ ] `POST /auth/login` — retorna JWT
 - [ ] Middleware de autenticação (valida JWT em todas as rotas protegidas)
 
 ### 1.2 Família
-- [ ] Modelo `Family` no MongoDB (`id`, `name`, `owner_id`, `invite_code`, `members[]`, `created_at`)
+- [ ] Tabelas `families` (`id`, `name`, `owner_id`, `invite_code`, `created_at`) e `family_members` (`family_id`, `user_id`, `role`)
 - [ ] `POST /families` — cria família e gera `invite_code` único (owner vira membro automaticamente)
 - [ ] `POST /families/join` — entra na família pelo `invite_code`
 - [ ] `GET /families/me` — retorna família do usuário autenticado com lista de membros
@@ -19,11 +30,11 @@
 ## Fase 2 — Upload de Mídias
 
 ### 2.1 Modelo de mídia
-- [ ] Modelo `Media` no MongoDB (`id`, `title`, `type` (filme/série/anime/foto), `owner_id`, `family_id`, `b2_key`, `size`, `duration`, `thumbnail_key`, `created_at`)
+- [ ] Modelo `Media` no Postgres (`id`, `title`, `type` (filme/série/anime/foto), `owner_id`, `family_id`, `b2_key`, `size`, `duration`, `thumbnail_key`, `created_at`)
 - [ ] Modelo `Episode` para séries (`id`, `media_id`, `season`, `episode`, `title`, `b2_key`, `duration`)
 
 ### 2.2 Upload
-- [ ] `POST /media/upload` — recebe arquivo(s), faz stream pro B2, salva metadados no MongoDB
+- [ ] `POST /media/upload` — recebe arquivo(s), faz stream pro B2, salva metadados no Postgres
 - [ ] Suporte a multipart upload (múltiplos arquivos simultâneos)
 - [ ] Validação de tipo de arquivo (vídeo, imagem) e tamanho máximo
 - [ ] Geração de thumbnail via FFmpeg após upload
@@ -32,7 +43,7 @@
 ### 2.3 Biblioteca
 - [ ] `GET /media` — lista mídias da família com filtros (tipo, título)
 - [ ] `GET /media/:id` — detalhes de uma mídia
-- [ ] `DELETE /media/:id` — remove mídia do B2 e do MongoDB (apenas owner)
+- [ ] `DELETE /media/:id` — remove mídia do B2 e do Postgres (apenas owner)
 
 ---
 

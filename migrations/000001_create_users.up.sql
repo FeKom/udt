@@ -1,9 +1,9 @@
-ALTER DATABASE SET udt_postgres SET timezone TO 'America/São_Paulo';
-
+-- Timestamps are TIMESTAMPTZ and stored in UTC; time zones are a
+-- presentation concern handled by the client.
 CREATE TABLE users (
-    id         uuid default uuidv7() PRIMARY KEY,
-    name       TEXT NOT NULL,
-    email      TEXT NOT NULL UNIQUE,
+    id         UUID        PRIMARY KEY DEFAULT uuidv7(),
+    name       TEXT        NOT NULL,
+    email      TEXT        NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

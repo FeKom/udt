@@ -8,36 +8,67 @@ Servidor de mídia pessoal e familiar com streaming de vídeo, upload de arquivo
 
 | Camada | Tecnologia |
 |---|---|
-| Backend | Go |
+| Backend | Go (monolito modular) |
 | Frontend | Next.js / TypeScript |
 | Storage | Backblaze B2 |
-| Banco de dados | MongoDB |
+| Banco de dados | PostgreSQL 18 |
 | Tempo real | WebSockets |
 
 ---
 
 ## Arquitetura
 
+Detalhes, regras de fronteira entre módulos e caminho de evolução em
+[`ARCHITECTURE.md`](ARCHITECTURE.md). Plano de entregas em
+[`ROADMAP.md`](ROADMAP.md).
+
 - Usuários e famílias com histórico e salvos individuais
-- Upload via pre-signed URL do Backblaze B2
-- Metadados salvos no MongoDB
+- Upload com stream do backend para o Backblaze B2
+- Metadados salvos no PostgreSQL
 - Streaming via HLS com suporte a múltiplos usuários simultâneos
 - Sala de cinema sincronizada via WebSockets (watch party)
 - Upload de um ou mais arquivos por vez
 
 ---
 
+## Rodando localmente
+
+Requer Go 1.26+ e Docker.
+
+```bash
+cp .env.example .env
+make up      # sobe o Postgres na porta 5433 e aplica as migrations
+make run     # API em http://localhost:4222
+make test
+```
+
+Endpoints disponíveis:
+
+| Rota | Descrição |
+|---|---|
+| `GET /healthz` | Liveness |
+| `GET /readyz` | Readiness, checa o Postgres |
+| `POST /users` | Cria usuário (`{"name","email"}`) |
+| `GET /users?name=&email=&limit=` | Lista com filtros opcionais |
+| `GET /users/{id}` | Busca por id |
+
+Nova migration: `make migrate-new name=create_families`.
+
+---
+
 ## Libs Go
 
 ### HTTP / Router
-- **chi** — https://github.com/go-chi/chi
+- **net/http** (stdlib, Go 1.22+) — https://pkg.go.dev/net/http
 
 ### Storage (Backblaze B2 — S3 compatible)
 - **aws-sdk-go-v2** — https://github.com/aws/aws-sdk-go-v2
 - **Backblaze S3-compatible API** — https://www.backblaze.com/docs/cloud-storage-s3-compatible-api
 
 ### Banco de dados
-- **MongoDB Go Driver** — https://www.mongodb.com/docs/drivers/go/current/
+- **pgx** — https://github.com/jackc/pgx
+- **squirrel** (query builder) — https://github.com/Masterminds/squirrel
+- **golang-migrate** — https://github.com/golang-migrate/migrate
 
 ### Auth
 - **golang-jwt** — https://github.com/golang-jwt/jwt
